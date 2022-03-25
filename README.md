@@ -13,6 +13,7 @@ task for you with a minimum of fuss.
     - UNIX
     - Mac OSX
     - Windows with the POSIX extension
+- A sphygmomanometer (device to measure blood pressure)
 
 ## Usage
 
