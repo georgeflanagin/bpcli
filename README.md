@@ -32,7 +32,7 @@ bp 120/70
 ```
 
 The record in the database will have your current username and the current timestamp, so you
-don't have to keep track of when you are taking your readings (at least not if you enter
+don't have to keep track of who you are, or when you are taking your readings (at least not if you enter
 the data promptly).
 
 ### Optional information
