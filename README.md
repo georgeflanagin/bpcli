@@ -5,6 +5,15 @@ If you are like me (i.e., you work in tech *and* you have hypertension), then yo
 might want to keep track of your blood pressure while you work. `bpcli` does this
 task for you with a minimum of fuss.
 
+## Requirements
+
+- Python 3.8+
+- POSIX compliant OS such as
+    - Any flavor of Linux
+    - UNIX
+    - Mac OSX
+    - Windows with the POSIX extension
+
 ## Usage
 
 ### At a minimum
@@ -37,10 +46,10 @@ the data promptly).
 - `bpcli` checks for a number of errors in your data input and tells you about them.
 - Only if the data are correct is the database written to.
 
- 
-
 ## The database
 
 You can put the database anywhere with the `--db` option. The first time you 
 run the program, the database will be created, either where you say to do it,
-or in `~/bp.db`
+or in `~/bp.db` If the database is in a non-default location, you will have to
+tell the program the location with the `--db mybpdb.db` option when you 
+enter your data.
