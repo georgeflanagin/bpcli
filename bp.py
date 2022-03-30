@@ -42,6 +42,11 @@ import getpass
 import sqlite3
 
 ###
+# Installed libraries
+###
+import pandas
+
+###
 # From hpclib
 ###
 
@@ -168,8 +173,12 @@ def data_to_tuple(data:list) -> tuple:
 
 def bp_main(myargs:argparse.Namespace) -> int:
 
-    data = data_to_tuple(myargs.data)
     db, cursor = create_or_open_db(myargs.db)
+    if myargs.data[0].lower() == 'report':
+        print(pandas.read_sql('SELECT * FROM facts', db).to_string())
+        return os.EX_OK
+
+    data = data_to_tuple(myargs.data)
     
     try:
         cursor.execute('''INSERT INTO facts 
