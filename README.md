@@ -46,6 +46,20 @@ the data promptly).
 - You can accidentally reverse your bp numbers, `bp 70 130`, and `bpcli` will fix it.
 - `bpcli` checks for a number of errors in your data input and tells you about them.
 - Only if the data are correct is the database written to.
+- If you want to see the readings you have entered, `bp report` will do it, and it produces a report that looks like this:
+
+```
+       user  systolic  diastolic  pulse arm                    t
+0  gflanagi       139         89      0   L  2022-03-28 12:59:12
+1  gflanagi       132         76      0   L  2022-03-28 16:57:14
+2  gflanagi       131         76      0   L  2022-03-28 18:25:47
+3  gflanagi       125         80      0   L  2022-03-29 14:55:07
+4  gflanagi       124         84      0   L  2022-03-29 16:28:09
+5  gflanagi       123         86      0   L  2022-03-29 16:34:14
+6  gflanagi       138         89      0   L  2022-03-30 17:00:08
+7  gflanagi       144         89      0   L  2022-03-31 12:41:49
+8  gflanagi       124         80      0   L  2022-03-31 15:40:57
+```
 
 ## The database
 
