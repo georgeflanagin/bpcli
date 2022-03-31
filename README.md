@@ -61,6 +61,8 @@ the data promptly).
 8  gflanagi       124         80      0   L  2022-03-31 15:40:57
 ```
 
+- All times are UTC.
+
 ## The database
 
 You can put the database anywhere with the `--db` option. The first time you 
