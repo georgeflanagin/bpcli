@@ -42,6 +42,27 @@ import getpass
 import sqlite3
 
 ###
+# This program executes three SQL statements, and rather
+# than spread them around, let's put the text literals here
+# and give them names.
+###
+SQL = {
+    'createtable':"""CREATE TABLE facts (
+        user VARCHAR(20), 
+        systolic INTEGER,
+        diastolic INTEGER,
+        pulse INTEGER,
+        arm CHAR(1),
+        t DATETIME DEFAULT CURRENT_TIMESTAMP)""",
+
+    'insertreading':"""INSERT INTO facts 
+        (user, systolic, diastolic, pulse, arm) 
+        VALUES (?, ?, ?, ?, ?)""",
+
+    'getallreadings':"SELECT * FROM facts"
+    }
+
+###
 # Installed libraries
 ###
 import pandas
@@ -62,7 +83,6 @@ __email__ = ['gflanagin@richmond.edu', 'me@georgeflanagin.com']
 __status__ = 'working prototype'
 __license__ = 'MIT'
 
-myid = getpass.getuser()
 verbose = False
 
 
@@ -75,19 +95,13 @@ def create_or_open_db(name:str) -> tuple:
     connection for commit and close, and one to the cursor to 
     manipulate the data.
     """
+    global SQL
+
     if not os.path.isfile(name):
 
         db = sqlite3.connect(name)
         cursor = db.cursor()
-        cursor.execute('''
-            CREATE TABLE facts (
-                user VARCHAR(20), 
-                systolic INTEGER,
-                diastolic INTEGER,
-                pulse INTEGER,
-                arm CHAR(1),
-                t DATETIME DEFAULT CURRENT_TIMESTAMP)
-        ''')
+        cursor.execute(SQL['createtable'])
         db.close()
         # Now that it is built, just call this function.
         return create_or_open_db(name)
@@ -104,7 +118,8 @@ def data_to_tuple(data:list) -> tuple:
     """
     Create the tuple to put in the database.
     """
-    global myid, verbose
+    global verbose
+    myid = getpass.getuser()
 
     # Some default values. The zeros will be easy to filter out
     # or impute in a pandas.DataFrame
@@ -172,25 +187,30 @@ def data_to_tuple(data:list) -> tuple:
 
 
 def bp_main(myargs:argparse.Namespace) -> int:
+    """
+    Do the work.
+    """
+
+    global SQL
 
     db, cursor = create_or_open_db(myargs.db)
     if myargs.data[0].lower() == 'report':
-        print(pandas.read_sql('SELECT * FROM facts', db).to_string())
+        print(pandas.read_sql(SQL['getallreadings'], db).to_string())
         return os.EX_OK
 
     data = data_to_tuple(myargs.data)
     
     try:
-        cursor.execute('''INSERT INTO facts 
-            (user, systolic, diastolic, pulse, arm) 
-            VALUES (?, ?, ?, ?, ?)''', data)
-        
+        cursor.execute(SQL['insertreading'], data)
         db.commit()
+
     except Exception as e:
         print(f"Exception writing to database: {e}")
         return os.EX_IOERR
 
-    db.close()
+    finally:
+        # Always close the DB, even there was an error.
+        db.close()
 
     return os.EX_OK
 
