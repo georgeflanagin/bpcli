@@ -65,7 +65,6 @@ SQL = {
 ###
 # Installed libraries
 ###
-import pandas
 
 ###
 # From hpclib
@@ -195,6 +194,7 @@ def bp_main(myargs:argparse.Namespace) -> int:
 
     db, cursor = create_or_open_db(myargs.db)
     if myargs.data[0].lower() == 'report':
+        import pandas
         print(pandas.read_sql(SQL['getallreadings'], db).to_string())
         return os.EX_OK
 
