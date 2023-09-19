@@ -81,7 +81,8 @@ def create_or_open_db(name:str) -> tuple:
                 diastolic INTEGER,
                 pulse INTEGER,
                 arm CHAR(1),
-                t DATETIME DEFAULT CURRENT_TIMESTAMP)
+                t DATETIME DEFAULT CURRENT_TIMESTAMP,
+                narrative VARCHAR(200) DEFAULT 'resting')
         ''')
         db.close()
         # Now that it is built, just call this function.
@@ -132,6 +133,8 @@ def data_to_tuple(data:list) -> tuple:
         systolic, diastolic, pulse = data
     elif nargs == 4:
         systolic, diastolic, pulse, arm = data
+    elif nargs == 5:
+        systolic, diastolic, pulse, arm, narrative = data
 
     # Check that the numbers are numbers.
     try:
@@ -163,7 +166,7 @@ def data_to_tuple(data:list) -> tuple:
         sys.exit(os.EX_DATAERR)
 
 
-    return myid, systolic, diastolic, pulse, arm
+    return myid, systolic, diastolic, pulse, arm, narrative
 
 
 def bp_main(myargs:argparse.Namespace) -> int:
@@ -173,8 +176,8 @@ def bp_main(myargs:argparse.Namespace) -> int:
     
     try:
         cursor.execute('''INSERT INTO facts 
-            (user, systolic, diastolic, pulse, arm) 
-            VALUES (?, ?, ?, ?, ?)''', data)
+            (user, systolic, diastolic, pulse, arm, narrative) 
+            VALUES (?, ?, ?, ?, ?, ?)''', data)
         
         db.commit()
     except Exception as e:
@@ -196,7 +199,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true',
         help="Be chatty about what is taking place")
     parser.add_argument('data', nargs='+',
-        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate and arm.")
+        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate, arm, and a narrative.")
 
     myargs = parser.parse_args()
     verbose = myargs.verbose
