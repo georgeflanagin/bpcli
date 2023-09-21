@@ -44,7 +44,8 @@ the data promptly).
 - You can add your pulse: `bp 120 70 60`
 - You can add a little blurb about the circumstances (in quotes): `bp 120 70 75 'just got up.'`
 - You can accidentally reverse your bp numbers, `bp 70 130`, and `bpcli` will fix it.
-- `bpcli` checks for a number of errors in your data input and tells you about them.
+- `bpcli` checks for a number of errors in your data input and tells you about them.    
+   `bp 0 0` prints: `You appear to be dead because your BP is 0/0.` 
 - Only if the data are correct is the database written to.
 
 ### Reporting
