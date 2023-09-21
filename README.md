@@ -42,7 +42,7 @@ the data promptly).
 - You can use the "slash" notation: `bp 120/70`
 - You can leave out the slash: `bp 120 70`
 - You can add your pulse: `bp 120 70 60`
-- You can add a little blurb about the circumstances (in quotes): `bp 120 70 75 'just got up.'
+- You can add a little blurb about the circumstances (in quotes): `bp 120 70 75 'just got up.'`
 - You can accidentally reverse your bp numbers, `bp 70 130`, and `bpcli` will fix it.
 - `bpcli` checks for a number of errors in your data input and tells you about them.
 - Only if the data are correct is the database written to.
