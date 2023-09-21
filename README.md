@@ -35,17 +35,23 @@ The record in the database will have your current username and the current times
 don't have to keep track of who you are, or when you are taking your readings (at least not if you enter
 the data promptly).
 
-### Optional information
+### Optional information and formats
 
 `bpcli` supports several input formats. 
 
 - You can use the "slash" notation: `bp 120/70`
 - You can leave out the slash: `bp 120 70`
 - You can add your pulse: `bp 120 70 60`
-- You can even add your arm on the end (if you have included pulse info): `bp 120/70 60 R`
+- You can add a little blurb about the circumstances (in quotes): `bp 120 70 75 'just got up.'
 - You can accidentally reverse your bp numbers, `bp 70 130`, and `bpcli` will fix it.
 - `bpcli` checks for a number of errors in your data input and tells you about them.
 - Only if the data are correct is the database written to.
+
+### Reporting
+
+Not much to it: `bp report`. The records of your blood pressure will be printed to the 
+screen, ordered by time stamp. Note that the timestamps in the database are UNIX timestamps,
+and are GMT. The report will appear with the times adjusted to your current timezone.
 
 ## The database
 
