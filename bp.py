@@ -81,7 +81,17 @@ def create_or_open_db(name:str) -> tuple:
                 diastolic INTEGER,
                 pulse INTEGER,
                 arm CHAR(1),
-                t DATETIME DEFAULT CURRENT_TIMESTAMP)
+                t DATETIME DEFAULT CURRENT_TIMESTAMP,
+                narrative VARCHAR(100))
+        ''')
+        cursor.execute('''
+            drop view export;
+            create view export as 
+                select 
+                    datetime(t, 'localtime') as time, 
+                    systolic, diastolic, pulse, 
+                    narrative 
+                from facts order by time;
         ''')
         db.close()
         # Now that it is built, just call this function.
@@ -107,8 +117,12 @@ def data_to_tuple(data:list) -> tuple:
     diastolic = 0
     pulse = 0
     arm = 'L'
+    narrative = "nothing to report"
 
     nargs=len(data)
+    if nargs == 1 and data[0].lower().strip() == 'report':
+        return 'report'
+
     using_slash = '/' in data[0]
     verbose and print(f"{using_slash=}")
 
@@ -131,7 +145,10 @@ def data_to_tuple(data:list) -> tuple:
     elif nargs == 3:
         systolic, diastolic, pulse = data
     elif nargs == 4:
-        systolic, diastolic, pulse, arm = data
+        systolic, diastolic, pulse, narrative = data
+    elif nargs == 5:
+        systolic, diastolic, pulse, arm, narrative = data
+        
 
     # Check that the numbers are numbers.
     try:
@@ -163,25 +180,32 @@ def data_to_tuple(data:list) -> tuple:
         sys.exit(os.EX_DATAERR)
 
 
-    return myid, systolic, diastolic, pulse, arm
+    return myid, systolic, diastolic, pulse, arm, narrative
 
 
 def bp_main(myargs:argparse.Namespace) -> int:
 
     data = data_to_tuple(myargs.data)
     db, cursor = create_or_open_db(myargs.db)
-    
+
+    if data == 'report':
+        for row in cursor.execute('''SELECT * from export''').fetchall():
+            print(row)
+        return os.EX_OK
+
     try:
         cursor.execute('''INSERT INTO facts 
-            (user, systolic, diastolic, pulse, arm) 
-            VALUES (?, ?, ?, ?, ?)''', data)
+            (user, systolic, diastolic, pulse, arm, narrative) 
+            VALUES (?, ?, ?, ?, ?, ?)''', data)
         
         db.commit()
+
     except Exception as e:
         print(f"Exception writing to database: {e}")
         return os.EX_IOERR
 
-    db.close()
+    finally:
+        db.close()
 
     return os.EX_OK
 
@@ -196,7 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true',
         help="Be chatty about what is taking place")
     parser.add_argument('data', nargs='+',
-        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate and arm.")
+        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate and arm. You can also choose to type 'report', and you will get a dump of the previously recorded data.")
 
     myargs = parser.parse_args()
     verbose = myargs.verbose
