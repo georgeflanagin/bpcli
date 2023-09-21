@@ -14,12 +14,14 @@ Usage:
     bp 140 80      # You can use a space if that works for you.
     bp 80 140      # bp will swap them for you.
     bp 130/95 75   # The third number is construed to be the pulse.
-    bp 130 70 60 R # The fourth term gives the arm, L or R. Default is L.
+    bp report      # dump the contents of the database.
+    bp report > x  # write the report to a file named 'x'.
 
 That's it.
 
 The records are written with the time stamp when the data are recorded,
-and the user name of the person running the program. 
+and the user name of the person running the program. Do note that the timestamps
+are GMT, but the 'bp report' function converts them to localtime.
 """
 
 min_py = (3, 8)
