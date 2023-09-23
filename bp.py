@@ -14,12 +14,14 @@ Usage:
     bp 140 80      # You can use a space if that works for you.
     bp 80 140      # bp will swap them for you.
     bp 130/95 75   # The third number is construed to be the pulse.
-    bp 130 70 60 R # The fourth term gives the arm, L or R. Default is L.
+    bp report      # dump the contents of the database.
+    bp report > x  # write the report to a file named 'x'.
 
 That's it.
 
 The records are written with the time stamp when the data are recorded,
-and the user name of the person running the program. 
+and the user name of the person running the program. Do note that the timestamps
+are GMT, but the 'bp report' function converts them to localtime.
 """
 
 min_py = (3, 8)
@@ -82,7 +84,16 @@ def create_or_open_db(name:str) -> tuple:
                 pulse INTEGER,
                 arm CHAR(1),
                 t DATETIME DEFAULT CURRENT_TIMESTAMP,
-                narrative VARCHAR(200) DEFAULT 'resting')
+                narrative VARCHAR(100))
+        ''')
+        cursor.execute('''
+            drop view export;
+            create view export as 
+                select 
+                    datetime(t, 'localtime') as time, 
+                    systolic, diastolic, pulse, 
+                    narrative 
+                from facts order by time;
         ''')
         db.close()
         # Now that it is built, just call this function.
@@ -108,8 +119,12 @@ def data_to_tuple(data:list) -> tuple:
     diastolic = 0
     pulse = 0
     arm = 'L'
+    narrative = "nothing to report"
 
     nargs=len(data)
+    if nargs == 1 and data[0].lower().strip() == 'report':
+        return 'report'
+
     using_slash = '/' in data[0]
     verbose and print(f"{using_slash=}")
 
@@ -132,7 +147,7 @@ def data_to_tuple(data:list) -> tuple:
     elif nargs == 3:
         systolic, diastolic, pulse = data
     elif nargs == 4:
-        systolic, diastolic, pulse, arm = data
+        systolic, diastolic, pulse, narrative = data
     elif nargs == 5:
         systolic, diastolic, pulse, arm, narrative = data
 
@@ -173,18 +188,25 @@ def bp_main(myargs:argparse.Namespace) -> int:
 
     data = data_to_tuple(myargs.data)
     db, cursor = create_or_open_db(myargs.db)
-    
+
+    if data == 'report':
+        for row in cursor.execute('''SELECT * from export''').fetchall():
+            print(row)
+        return os.EX_OK
+
     try:
         cursor.execute('''INSERT INTO facts 
             (user, systolic, diastolic, pulse, arm, narrative) 
             VALUES (?, ?, ?, ?, ?, ?)''', data)
         
         db.commit()
+
     except Exception as e:
         print(f"Exception writing to database: {e}")
         return os.EX_IOERR
 
-    db.close()
+    finally:
+        db.close()
 
     return os.EX_OK
 
@@ -199,7 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true',
         help="Be chatty about what is taking place")
     parser.add_argument('data', nargs='+',
-        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate, arm, and a narrative.")
+        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate and arm. You can also choose to type 'report', and you will get a dump of the previously recorded data.")
 
     myargs = parser.parse_args()
     verbose = myargs.verbose
