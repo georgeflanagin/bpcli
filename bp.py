@@ -216,7 +216,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog="bp", 
         description="What bp does, bp does best.")
     parser.add_argument('--db', type=str, 
-        default=os.path.join(os.environ.get('HOME'), 'bp.db'),
+        default=os.path.join('bp.db'),
         help="Name of the database.")
     parser.add_argument('-v', '--verbose', action='store_true',
         help="Be chatty about what is taking place")

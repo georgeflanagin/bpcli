@@ -58,6 +58,6 @@ and are GMT. The report will appear with the times adjusted to your current time
 
 You can put the database anywhere with the `--db` option. The first time you 
 run the program, the database will be created, either where you say to do it,
-or in `~/bp.db` If the database is in a non-default location, you will have to
+or in `./bp.db` If the database is in a non-default location, you will have to
 tell the program the location with the `--db mybpdb.db` option when you 
 enter your data.
