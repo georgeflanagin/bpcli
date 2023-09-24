@@ -14,6 +14,7 @@ Usage:
     bp 140 80      # You can use a space if that works for you.
     bp 80 140      # bp will swap them for you.
     bp 130/95 75   # The third number is construed to be the pulse.
+    bp 130/90 80 some text about the reading  # The text does not need to be quoted.
     bp report      # dump the contents of the database.
     bp report > x  # write the report to a file named 'x'.
 
@@ -71,11 +72,8 @@ positive_number = lexeme(DIGIT_STR).parsecmap(int)
 systolic = positive_number
 slash = lexeme(string(SLASH))
 diastolic = (slash >> positive_number) ^ positive_number
-pressure = systolic + diastolic 
 pulse = positive_number
-numbers = systolic + diastolic + pulse
-narrative = quoted | string
-bp_parser = numbers + narrative
+bp_parser = systolic + diastolic + pulse + everything 
 
 
 def create_or_open_db(name:str) -> tuple:
@@ -130,26 +128,26 @@ def data_to_tuple(data:list) -> tuple:
 
     try:
         data = bp_parser.parse(" ".join(data))
-    except:
-        print(data_help)
+    except Exception as e:
+        print(e)
         sys.exit(os.EX_DATAERR)
-    
-    bp, pulse, narrative = data
-    systolic, diastolic = bp
 
-    return myid, systolic, diastolic, pulse, 'L', narrative
+    numbers, desc = data
+    pressure, pulse = numbers
+    s, d = pressure
+
+    return myid, s, d, pulse, 'L', desc
 
 
 def bp_main(myargs:argparse.Namespace) -> int:
 
-    data = data_to_tuple(myargs.data)
     db, cursor = create_or_open_db(myargs.db)
-
-    if data == 'report':
+    if myargs.data[0] == 'report':
         for row in cursor.execute('''SELECT * from export''').fetchall():
             print(row)
         return os.EX_OK
 
+    data = data_to_tuple(myargs.data)
     try:
         cursor.execute('''INSERT INTO facts 
             (user, systolic, diastolic, pulse, arm, narrative) 
@@ -177,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true',
         help="Be chatty about what is taking place")
     parser.add_argument('data', nargs='+',
-        help="You must supply the systolic/diastolic pressures, and *optionally* heart rate and arm. You can also choose to type 'report', and you will get a dump of the previously recorded data.")
+        help="You must supply the systolic/diastolic pressures, heart rate, and optionally a desc. You can also choose to type 'report', and you will get a dump of the previously recorded data.")
 
     myargs = parser.parse_args()
     verbose = myargs.verbose
