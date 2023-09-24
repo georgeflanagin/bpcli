@@ -46,6 +46,8 @@ import sqlite3
 ###
 # From hpclib
 ###
+import parsec4 
+from   parsec4 import *
 
 ###
 # Credits
@@ -61,6 +63,19 @@ __license__ = 'MIT'
 
 myid = getpass.getuser()
 verbose = False
+
+###
+# for the bp parser
+###
+positive_number = lexeme(DIGIT_STR).parsecmap(int)
+systolic = positive_number
+slash = lexeme(string(SLASH))
+diastolic = (slash >> positive_number) ^ positive_number
+pressure = systolic + diastolic 
+pulse = positive_number
+numbers = systolic + diastolic + pulse
+narrative = quoted | string
+bp_parser = numbers + narrative
 
 
 def create_or_open_db(name:str) -> tuple:
@@ -113,75 +128,16 @@ def data_to_tuple(data:list) -> tuple:
     """
     global myid, verbose
 
-    # Some default values. The zeros will be easy to filter out
-    # or impute in a pandas.DataFrame
-    systolic = 0
-    diastolic = 0
-    pulse = 0
-    arm = 'L'
-    narrative = "nothing to report"
-
-    nargs=len(data)
-    if nargs == 1 and data[0].lower().strip() == 'report':
-        return 'report'
-
-    using_slash = '/' in data[0]
-    verbose and print(f"{using_slash=}")
-
-    if not using_slash and nargs < 2:
-        print(f"I do not understand {data}")
-        sys.exit(os.EX_NOINPUT)
-
-    elif using_slash:
-        data = data[0].split('/') + data[1:]
-
-    else:
-        pass
-
-    verbose and print(f"{data=}")
-
-    # Note that the number of things in data may have changed.
-    nargs = len(data)
-    if nargs == 2:
-        systolic, diastolic = data
-    elif nargs == 3:
-        systolic, diastolic, pulse = data
-    elif nargs == 4:
-        systolic, diastolic, pulse, narrative = data
-    elif nargs == 5:
-        systolic, diastolic, pulse, arm, narrative = data
-
-    # Check that the numbers are numbers.
     try:
-        systolic = int(systolic)
-        diastolic = int(diastolic)
-        pulse = int(pulse)
+        data = bp_parser.parse(" ".join(data))
     except:
-        print(f"Some of your numbers are not numbers: {data}")        
+        print(data_help)
         sys.exit(os.EX_DATAERR)
-    else:
-        verbose and print(f"{diastolic=} {systolic=} {pulse=}")
+    
+    bp, pulse, narrative = data
+    systolic, diastolic = bp
 
-    # Silently swap the BP numbers if required.
-    if diastolic > systolic:
-        systolic, diastolic = diastolic, systolic
-        verbose and print(f"{diastolic=} {systolic=}")
-
-    arm = arm.upper()
-    if arm not in ('L', 'R'):
-        print(f"Most people only have two arms, L and R. You have a '{arm}' arm.")
-        sys.exit(os.EX_DATAERR)
-
-    if not systolic * diastolic:
-        print(f"You appear to be dead because your BP is {systolic}/{diastolic}.")
-        sys.exit(os.EX_DATAERR)
-
-    if diastolic < 0:
-        print(f"Outside Transylvania, negative BP is a sign of something bad: {systolic}/{diastolic}.")
-        sys.exit(os.EX_DATAERR)
-
-
-    return myid, systolic, diastolic, pulse, arm, narrative
+    return myid, systolic, diastolic, pulse, 'L', narrative
 
 
 def bp_main(myargs:argparse.Namespace) -> int:
