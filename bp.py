@@ -73,7 +73,7 @@ systolic = positive_number
 slash = lexeme(string(SLASH))
 diastolic = (slash >> positive_number) ^ positive_number
 pulse = positive_number
-bp_parser = systolic + diastolic + pulse + everything 
+bp_parser = systolic + diastolic + pulse + everything_else
 
 
 def create_or_open_db(name:str) -> tuple:
